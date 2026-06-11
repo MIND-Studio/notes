@@ -1,0 +1,10 @@
+# Keep the build context small and prevent host artifacts from clobbering
+# the image's npm-ci'd node_modules during `COPY . .`.
+node_modules
+.next
+.git
+.github
+
+# Local pod / build state — never belongs in an image.
+.css-data
+.home-data

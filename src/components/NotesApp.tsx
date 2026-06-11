@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button, Input, Spinner } from "@mind-studio/ui";
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
 import { ensureSession, rememberSignedOutPath } from "@/lib/solid/auth";
+import { currentIdentity, isBrokered, signalReady } from "@/lib/solid/broker";
 import { readdir, readFileText, writeFileText, unlink, isNotFound } from "@/lib/solid/pod-fs";
-import { notesContainerFor, podRootFromWebId } from "@/lib/config";
+import { notesContainerFor } from "@/lib/config";
 import { titleFromBody, idFromUrl, relativeTime, type NoteMeta } from "@/lib/notes";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -23,8 +24,11 @@ const NEW_NOTE_BODY = "# Untitled\n\n";
 export default function NotesApp() {
   const router = useRouter();
 
-  // session
-  const [webId, setWebId] = useState<string | null>(null);
+  // session — webId + pod root together, since brokered mode supplies both.
+  const [identity, setIdentity] = useState<{
+    webId: string;
+    podRoot: string;
+  } | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
 
   // list
@@ -44,16 +48,20 @@ export default function NotesApp() {
   const [error, setError] = useState<string | null>(null);
 
   const container = useMemo(
-    () => (webId ? notesContainerFor(podRootFromWebId(webId)) : null),
-    [webId]
+    () => (identity ? notesContainerFor(identity.podRoot) : null),
+    [identity]
   );
 
   // --- session gate -------------------------------------------------------
   useEffect(() => {
     ensureSession()
-      .then((info) => {
-        if (info.isLoggedIn && info.webId) {
-          setWebId(info.webId);
+      .then(() => {
+        // Identity is brokered-first: inside the Mind shell it's the shell's
+        // webId + workspace pod root (no local session); standalone it's the
+        // OIDC session.
+        const id = currentIdentity();
+        if (id) {
+          setIdentity(id);
         } else {
           // Remember the deep link so reconnecting returns here.
           rememberSignedOutPath();
@@ -109,7 +117,13 @@ export default function NotesApp() {
   }, []);
 
   useEffect(() => {
-    if (container) void loadNotes(container);
+    if (!container) return;
+    void (async () => {
+      await loadNotes(container);
+      // Tell the shell we've rendered so it drops its loading overlay (no-op
+      // when standalone).
+      if (isBrokered()) signalReady();
+    })();
   }, [container, loadNotes]);
 
   // --- open a note --------------------------------------------------------
@@ -220,7 +234,7 @@ export default function NotesApp() {
   const dirty = draft !== savedBody;
 
   // --- render -------------------------------------------------------------
-  if (!sessionChecked || !webId) {
+  if (!sessionChecked || !identity) {
     return (
       <div className="flex flex-1 items-center justify-center py-24">
         <div className="flex items-center gap-3 text-muted-foreground">

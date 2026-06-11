@@ -11,6 +11,7 @@ import {
   createContainerAt,
 } from "@inrupt/solid-client";
 import { session } from "./session";
+import { isBrokered, brokerFetch } from "./broker";
 
 /**
  * Thin wrappers around the Solid LDP HTTP API. All pod I/O in this prototype
@@ -31,8 +32,14 @@ export type PodEntry = {
   modified?: Date;
 };
 
+/**
+ * The fetch every pod call runs through. When Notes is hosted in the Mind
+ * shell (brokered mode) this is the shell's scope-checked broker fetch — Notes
+ * holds no session of its own; otherwise it's the local OIDC session's authed
+ * fetch.
+ */
 function authedFetch(): typeof fetch {
-  return session().fetch as typeof fetch;
+  return isBrokered() ? brokerFetch : (session().fetch as typeof fetch);
 }
 
 /**

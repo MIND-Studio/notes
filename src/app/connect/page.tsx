@@ -6,12 +6,10 @@ export default function ConnectPage() {
       <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
         Connect a pod
       </p>
-      <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-        Your notes, in your pod.
-      </h1>
+      <h1 className="mt-4 text-4xl font-semibold tracking-tight">Your notes, in your pod.</h1>
       <p className="mt-4 text-muted-foreground">
-        Sign in with your Solid identity. Every note is a plain markdown file
-        in your pod — no central server ever holds your text.
+        Sign in with your Solid identity. Every note is a plain markdown file in your pod — no
+        central server ever holds your text.
       </p>
       <div className="mt-8">
         <ConnectForm />

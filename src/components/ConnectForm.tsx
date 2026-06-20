@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { login } from "@inrupt/solid-client-authn-browser";
-import {
-  MindLoginCard,
-  writeLastIdentity,
-  clearLastIdentity,
-} from "@mind-studio/core";
+import { clearLastIdentity, MindLoginCard, writeLastIdentity } from "@mind-studio/core";
 import { Button } from "@mind-studio/ui";
-import { DEFAULT_ISSUER, session, rememberIssuer } from "@/lib/solid/session";
+import { useEffect, useState } from "react";
 import { ensureSession, rememberReturnToDefault } from "@/lib/solid/auth";
+import { DEFAULT_ISSUER, rememberIssuer, session } from "@/lib/solid/session";
 
 const APP_NAME = "Notes";
 const CLIENT_NAME = "Mind Notes";
@@ -31,9 +27,7 @@ function startLogin({ issuer }: { issuer: string }) {
     oidcIssuer: issuer,
     redirectUrl: new URL("/login/callback", origin).toString(),
     clientName: CLIENT_NAME,
-    ...(isLocal
-      ? {}
-      : { clientId: new URL("/api/client-id", origin).toString() }),
+    ...(isLocal ? {} : { clientId: new URL("/api/client-id", origin).toString() }),
   });
 }
 
@@ -65,9 +59,7 @@ export default function ConnectForm() {
   if (webId) {
     return (
       <div className="rounded-lg border border-primary/40 bg-primary/5 p-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
-          Connected
-        </p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Connected</p>
         <p className="mt-2 break-all font-mono text-sm" data-testid="webid">
           {webId}
         </p>

@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button, Input, Spinner } from "@mind-studio/ui";
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { notesContainerFor } from "@/lib/config";
+import { idFromUrl, type NoteMeta, relativeTime, titleFromBody } from "@/lib/notes";
 import { ensureSession, rememberSignedOutPath } from "@/lib/solid/auth";
 import { currentIdentity, isBrokered, signalReady } from "@/lib/solid/broker";
-import { readdir, readFileText, writeFileText, unlink, isNotFound } from "@/lib/solid/pod-fs";
-import { notesContainerFor } from "@/lib/config";
-import { titleFromBody, idFromUrl, relativeTime, type NoteMeta } from "@/lib/notes";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { isNotFound, readdir, readFileText, unlink, writeFileText } from "@/lib/solid/pod-fs";
 
 type SaveState = "saved" | "saving" | "dirty";
 
@@ -49,7 +49,7 @@ export default function NotesApp() {
 
   const container = useMemo(
     () => (identity ? notesContainerFor(identity.podRoot) : null),
-    [identity]
+    [identity],
   );
 
   // --- session gate -------------------------------------------------------
@@ -89,9 +89,7 @@ export default function NotesApp() {
         }
         throw e;
       }
-      const files = entries.filter(
-        (en) => en.kind === "resource" && en.name.endsWith(".md")
-      );
+      const files = entries.filter((en) => en.kind === "resource" && en.name.endsWith(".md"));
       // Titles live in the bodies (first line) — fetch each note's text.
       // Notes are small; tolerate individual failures.
       const metas = await Promise.all(
@@ -103,11 +101,9 @@ export default function NotesApp() {
             title = "(unreadable note)";
           }
           return { url: f.url, id: idFromUrl(f.url), title, modified: f.modified };
-        })
+        }),
       );
-      metas.sort(
-        (a, b) => (b.modified?.getTime() ?? 0) - (a.modified?.getTime() ?? 0)
-      );
+      metas.sort((a, b) => (b.modified?.getTime() ?? 0) - (a.modified?.getTime() ?? 0));
       setNotes(metas);
     } catch (e) {
       setError(`Couldn't load your notes: ${String(e)}`);
@@ -183,13 +179,9 @@ export default function NotesApp() {
       // Re-derive title + bump modified locally; no full reload needed.
       setNotes((prev) => {
         const next = prev.map((n) =>
-          n.url === selectedUrl
-            ? { ...n, title: titleFromBody(body), modified: new Date() }
-            : n
+          n.url === selectedUrl ? { ...n, title: titleFromBody(body), modified: new Date() } : n,
         );
-        next.sort(
-          (a, b) => (b.modified?.getTime() ?? 0) - (a.modified?.getTime() ?? 0)
-        );
+        next.sort((a, b) => (b.modified?.getTime() ?? 0) - (a.modified?.getTime() ?? 0));
         return next;
       });
       // If the user kept typing during the round-trip, the derived `dirty`
@@ -265,11 +257,7 @@ export default function NotesApp() {
             className="w-full justify-center"
             data-testid="new-note"
           >
-            {creating ? (
-              <Spinner className="size-4" />
-            ) : (
-              <Plus className="size-4" />
-            )}
+            {creating ? <Spinner className="size-4" /> : <Plus className="size-4" />}
             New note
           </Button>
 
@@ -292,9 +280,7 @@ export default function NotesApp() {
               <ListSkeleton />
             ) : filtered.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-                {notes.length === 0
-                  ? "No notes yet."
-                  : "No notes match your search."}
+                {notes.length === 0 ? "No notes yet." : "No notes match your search."}
               </p>
             ) : (
               <ul className="divide-y">
@@ -308,9 +294,7 @@ export default function NotesApp() {
                       }`}
                       data-testid="note-item"
                     >
-                      <span className="block truncate text-sm font-medium">
-                        {n.title}
-                      </span>
+                      <span className="block truncate text-sm font-medium">{n.title}</span>
                       <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
                         {relativeTime(n.modified) || "—"}
                       </span>
@@ -334,15 +318,8 @@ export default function NotesApp() {
           ) : selected ? (
             <>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <p
-                  className="font-mono text-[11px] text-muted-foreground"
-                  data-testid="save-state"
-                >
-                  {saveState === "saving"
-                    ? "Saving…"
-                    : dirty
-                      ? "Unsaved changes"
-                      : "Saved"}
+                <p className="font-mono text-[11px] text-muted-foreground" data-testid="save-state">
+                  {saveState === "saving" ? "Saving…" : dirty ? "Unsaved changes" : "Saved"}
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
@@ -382,9 +359,7 @@ export default function NotesApp() {
             <EmptyState onCreate={createNote} creating={creating} />
           ) : (
             <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed">
-              <p className="text-sm text-muted-foreground">
-                Select a note to start editing.
-              </p>
+              <p className="text-sm text-muted-foreground">Select a note to start editing.</p>
             </div>
           )}
         </section>
@@ -401,20 +376,12 @@ export default function NotesApp() {
   );
 }
 
-function EmptyState({
-  onCreate,
-  creating,
-}: {
-  onCreate: () => void;
-  creating: boolean;
-}) {
+function EmptyState({ onCreate, creating }: { onCreate: () => void; creating: boolean }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center">
       <FileText className="size-8 text-muted-foreground" />
       <div>
-        <p className="text-lg font-semibold tracking-tight">
-          Create your first note
-        </p>
+        <p className="text-lg font-semibold tracking-tight">Create your first note</p>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
           Notes are plain markdown files stored in your pod, under{" "}
           <span className="font-mono">apps/notes/</span>.

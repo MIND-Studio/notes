@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Spinner } from "@mind-studio/ui";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { ensureSession } from "@/lib/solid/auth";
 
 /**

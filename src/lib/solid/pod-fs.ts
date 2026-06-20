@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  getSolidDataset,
-  getContainedResourceUrlAll,
-  getThing,
-  getDatetime,
-  deleteFile,
-  overwriteFile,
-  getFile,
   createContainerAt,
+  deleteFile,
+  getContainedResourceUrlAll,
+  getDatetime,
+  getFile,
+  getSolidDataset,
+  getThing,
+  overwriteFile,
 } from "@inrupt/solid-client";
+import { brokerFetch, isBrokered } from "./broker";
 import { session } from "./session";
-import { isBrokered, brokerFetch } from "./broker";
 
 /**
  * Thin wrappers around the Solid LDP HTTP API. All pod I/O in this prototype
@@ -76,7 +76,7 @@ export async function readdir(containerUrl: string): Promise<PodEntry[]> {
     const isContainer = url.endsWith("/");
     const thing = getThing(dataset, url);
     const modified = thing
-      ? getDatetime(thing, "http://purl.org/dc/terms/modified") ?? undefined
+      ? (getDatetime(thing, "http://purl.org/dc/terms/modified") ?? undefined)
       : undefined;
     const tail = url.slice(parent.length);
     return {
@@ -102,7 +102,7 @@ export async function readFileText(url: string): Promise<string> {
 export async function writeFileText(
   url: string,
   contents: string,
-  contentType = "text/markdown"
+  contentType = "text/markdown",
 ): Promise<void> {
   const put = () =>
     overwriteFile(url, new Blob([contents], { type: contentType }), {

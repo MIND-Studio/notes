@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@mind-studio/ui";
 import { mind } from "@mind-studio/ui/themes";
+import type { Metadata } from "next";
+import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { BrokerThemeSync } from "@/components/BrokerThemeSync";
 import Header from "@/components/Header";
 import { StandaloneOnly } from "@/components/StandaloneOnly";
-import { BrokerThemeSync } from "@/components/BrokerThemeSync";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -29,9 +29,7 @@ export const metadata: Metadata = {
     "A calm, text-first markdown notes app built on Solid Pods. Every note is a plain .md file in your pod.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"

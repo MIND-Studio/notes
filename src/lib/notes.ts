@@ -17,8 +17,7 @@ export type NoteMeta = {
 };
 
 export function titleFromBody(body: string): string {
-  const first =
-    body.split(/\r?\n/).find((line) => line.trim().length > 0) ?? "";
+  const first = body.split(/\r?\n/).find((line) => line.trim().length > 0) ?? "";
   const stripped = first.replace(/^#+\s*/, "").trim();
   return stripped || "Untitled";
 }

@@ -13,8 +13,6 @@ import { ensureSession, rememberReturnToDefault } from "@/lib/solid/auth";
 
 const APP_NAME = "Notes";
 const CLIENT_NAME = "Mind Notes";
-// Mind brand primary (teal), so the login card matches the design system.
-const MIND_ACCENT = "#0d9488";
 
 /**
  * Start the OIDC redirect. Mirrors `@mind-studio/core`'s `browserOidcLogin`
@@ -91,7 +89,6 @@ export default function ConnectForm() {
         appName={APP_NAME}
         tagline="Your notes, in your pod."
         defaultIssuer={DEFAULT_ISSUER}
-        accent={MIND_ACCENT}
         onLogin={async ({ issuer }) => {
           rememberIssuer(issuer);
           // Fall back to /notes only if a deep link wasn't already remembered
